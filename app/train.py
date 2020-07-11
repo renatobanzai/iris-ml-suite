@@ -10,12 +10,13 @@ import json
 
 
 
-url = "jdbc:IRIS://localhost:51773/PYTHON"
-driver = 'com.intersystems.jdbc.IRISDriver'
-user = "_SYSTEM"
-password = "SYS"
-jarfile = "./intersystems-jdbc-3.1.0.jar"
-conn = jaydebeapi.connect(driver, url, [user, password], jarfile)
+jdbc_server = "jdbc:IRIS://localhost:51773/PYTHON"
+jdbc_driver = 'com.intersystems.jdbc.IRISDriver'
+iris_jdbc_jar = "./intersystems-jdbc-3.1.0.jar"
+iris_user = "_SYSTEM"
+iris_password = "SYS"
+
+conn = jaydebeapi.connect(jdbc_driver, jdbc_server, [iris_user, iris_password], iris_jdbc_jar)
 curs = conn.cursor()
 curs.execute("SELECT "
              "top 1000 id, Name, Tags, Text "
