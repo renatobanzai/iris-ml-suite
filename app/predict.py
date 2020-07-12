@@ -1,16 +1,32 @@
 # -*- coding: utf-8 -*-
 import dash
 import dash_table
+from pandas import DataFrame
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 import pickle
 import json
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+import re, string
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import accuracy_score
+from sklearn.multiclass import OneVsRestClassifier
 
 # load the model from disk
-filename = 'contest.sav'
+filename = 'predictors.sav'
 predictors = pickle.load(open(filename, 'rb'))
+
+re_tok = re.compile(f'([{string.punctuation}“”¨«»®´·º½¾¿¡§£₤‘’])')
+def tokenize(s):
+    return re_tok.sub(r' \1 ', s).split()
+
+filename = 'vec.sav'
+vec = pickle.load(open(filename, 'rb'))
+
 
 # load tags
 with open('all_tags.json') as json_file:
@@ -36,17 +52,27 @@ def get_post_tag_classifier_1():
         ])])
         ])
 
+
+
+
 @app.callback(
     Output('result-classifier-1', 'value'),
     [Input('predict-button-classifier-1', 'n_clicks')],
     [State('post-classifier-1', 'value')])
 def predict_classifier_1(n_clicks, post):
+    #vec = TfidfVectorizer(ngram_range=(1, 2), tokenizer=tokenize,
+    #                      min_df=1, max_df=1, strip_accents='unicode', use_idf=1,
+    #                      smooth_idf=1, sublinear_tf=1)
+    result = []
     if n_clicks > 0:
-        #for tag in all_tags:
-        #    predictors[tag].predict(post)
-        return ["node.js", "jdbc"]
-    else:
-        return []
+        df_post = DataFrame(columns=["text"])
+        df_post["text"] = [post.lower()]
+        post_prepared = vec.transform(df_post["text"])
+        for tag in set(all_tags):
+            if predictors[tag].predict(post_prepared)[0] == 1:
+                result.append(tag)
+
+    return result
 
 
 navbar = dbc.NavbarSimple(id="list_menu_content", children=[
@@ -72,4 +98,4 @@ if __name__ == '__main__':
     app.layout = html.Div([dcc.Location(id='url', refresh=False),
                         html.Div(navbar),
                         html.Div(id='page-content')])
-    app.run_server(debug=False,host='0.0.0.0')
+    app.run_server(debug=True,host='0.0.0.0')

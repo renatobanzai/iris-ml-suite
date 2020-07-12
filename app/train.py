@@ -7,7 +7,10 @@ from pandas import DataFrame
 import re, string
 import pickle
 import json
-
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import accuracy_score
+from sklearn.multiclass import OneVsRestClassifier
 
 
 jdbc_server = "jdbc:IRIS://localhost:51773/PYTHON"
@@ -57,11 +60,13 @@ mlb = MultiLabelBinarizer(classes=all_tags)
 y_total = mlb.fit_transform(df["tags"])
 
 n = df.shape[0]
-vec = TfidfVectorizer(ngram_range=(1,2), tokenizer=tokenize,
-                      min_df=3, max_df=0.9, strip_accents='unicode', use_idf=1,
+vec = TfidfVectorizer(ngram_range=(1,2), tokenizer=tokenize, strip_accents='unicode', use_idf=1,
                       smooth_idf=1, sublinear_tf=1 )
 
 x_total = vec.fit_transform(df["text"])
+
+filename = 'vec.sav'
+pickle.dump(vec, open(filename, 'wb'))
 
 percent_training = 0.8
 line = int(percent_training * n)
@@ -75,10 +80,6 @@ y_test = DataFrame(y_total[line:])
 y_test.columns = mlb.classes_
 y_train.columns = mlb.classes_
 
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
-from sklearn.metrics import accuracy_score
-from sklearn.multiclass import OneVsRestClassifier
 
 # Using pipeline for applying logistic regression and one vs rest classifier
 LogReg_pipeline = Pipeline([('clf', OneVsRestClassifier(LogisticRegression(solver='sag', max_iter=800), n_jobs=-1)),])
@@ -97,7 +98,7 @@ for tag in all_tags:
     print('Test accuracy is {}'.format(accuracy_score(y_test[tag], prediction)))
     print("\n")
 
-filename = 'contest.sav'
+filename = 'predictors.sav'
 pickle.dump(predictors, open(filename, 'wb'))
 
 # load the model from disk
