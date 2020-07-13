@@ -1,0 +1,30 @@
+version: '3.6'
+services:
+  iris-ml:
+    build:
+      context: ./iris
+      dockerfile: Dockerfile
+    restart: always
+    hostname: iris-ml
+    ports:
+      - 9096:51773
+      - 9097:52773
+      - 9098:53773
+    volumes:
+      - ./iris:/irisdev/app
+
+  iris-ml-suite:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    hostname: python-iris-ml
+    restart: always
+    depends_on:
+      - iris-ml
+    links:
+      - iris-ml
+    ports:
+      - 8050:8050
+    environment:
+      WAIT_HOSTS: iris-ml:51773
+    command: predict.py
