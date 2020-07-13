@@ -10,6 +10,11 @@ import pickle
 import json
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 import re, string
+import nltk
+from nltk.corpus import stopwords
+nltk.download('stopwords')
+stop_words = set(stopwords.words('english'))
+
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
@@ -30,7 +35,36 @@ vec = pickle.load(open(filename, 'rb'))
 
 # load tags
 with open('all_tags.json') as json_file:
-    all_tags = json.load(json_file)
+    all_tags = set(json.load(json_file))
+
+
+
+def clean_text(text):
+    text = re.sub(r"what's", "what is ", text)
+    text = re.sub(r"\'s", " ", text)
+    text = re.sub(r"\'ve", " have ", text)
+    text = re.sub(r"can't", "can not ", text)
+    text = re.sub(r"n't", " not ", text)
+    text = re.sub(r"i'm", "i am ", text)
+    text = re.sub(r"\'re", " are ", text)
+    text = re.sub(r"\'d", " would ", text)
+    text = re.sub(r"\'ll", " will ", text)
+    text = re.sub(r"\'scuse", " excuse ", text)
+    text = re.sub('\W', ' ', text)
+    text = re.sub('\s+', ' ', text)
+    text = text.strip(' ')
+    return text
+
+
+view_query = []
+for tag in all_tags:
+    view_query.append(" SELECT top 20 id, Name, Tags, Text, PostType "
+                      "FROM Community.Post "
+                      "Where lang = 'en' "
+                      "and tags like '%" + tag + "%' ")
+
+
+str_view_query = " union ".join(view_query)
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
@@ -66,9 +100,9 @@ def predict_classifier_1(n_clicks, post):
     result = []
     if n_clicks > 0:
         df_post = DataFrame(columns=["text"])
-        df_post["text"] = [post.lower()]
+        df_post["text"] = [clean_text(post.lower())]
         post_prepared = vec.transform(df_post["text"])
-        for tag in set(all_tags):
+        for tag in all_tags:
             if predictors[tag].predict(post_prepared)[0] == 1:
                 result.append(tag)
 
@@ -78,7 +112,7 @@ def predict_classifier_1(n_clicks, post):
 navbar = dbc.NavbarSimple(id="list_menu_content", children=[
     dbc.NavItem(dbc.NavLink("Post Tag Classifier 1", href="/post-tag-classifier-1")),
     dbc.NavItem(dbc.NavLink("Post Tag Classifier 2", href="/post-tag-classifier-2")),
-    dbc.NavItem(dbc.NavLink("Vote in iris-python-suite!",
+    dbc.NavItem(dbc.NavLink("Vote in iris-ml-suite!",
                             href="https://openexchange.intersystems.com/contest/current", target="_blank")
                 )])
 
