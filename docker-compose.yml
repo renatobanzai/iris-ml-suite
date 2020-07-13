@@ -7,9 +7,9 @@ services:
     restart: always
     hostname: iris-ml
     ports:
-      - 9096:51773
-      - 9097:52773
-      - 9098:53773
+      - 9091:51773
+      - 9092:52773
+      - 9093:53773
     volumes:
       - ./iris:/irisdev/app
 
