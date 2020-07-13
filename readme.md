@@ -18,10 +18,15 @@ I decided to take the the suggestion on this post:
 I have deployed the trained model as a demo here:
 [http://iris-ml-suite.eastus.cloudapp.azure.com/](http://iris-ml-suite.eastus.cloudapp.azure.com/)
 
-# First Approach
-I start exploring the data to extract some features from the Post dataset. To acelerate I was using the Tags field as 
+## First Approach
+I start exploring the data to extract some features from the Post dataset. To accelerate I had used the Tags field as 
 training set.
 
+## Using the demo
+
+Type or paste a community post on the textarea of site and click in Predict. After this, my model will predict which
+ tags should fit better for it. 
+ 
 # Next Steps
 - Make a task force to create a good training dataset.
 - Use the comments to enforce the model.
