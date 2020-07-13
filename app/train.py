@@ -12,6 +12,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.metrics import accuracy_score
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
 import nltk
 from nltk.corpus import stopwords
 nltk.download('stopwords')
@@ -45,6 +46,14 @@ total_vocab = curs_vocab.fetchall()
 df_vocab = DataFrame(columns=["vocab"], data=total_vocab)
 df_vocab = df_vocab.applymap(lambda s: s.lower() if type(s) == str else s)
 
+curs_tags = conn.cursor()
+curs_tags.execute("SELECT  ID "
+                   "FROM Community.Tag "
+                   "where not id is null ")
+total_tags = curs_tags.fetchall()
+df_tags = DataFrame(columns=["tags"], data=total_tags)
+df_tags = df_tags.applymap(lambda s: s.lower() if type(s) == str else s)
+
 
 df = DataFrame(total_cache)
 df.columns = [x[0].lower() for x in curs.description]
@@ -74,14 +83,17 @@ def prepare_dataframe(_df):
 
 
 def get_all_tags(tags_list):
+    real_tags = df_tags["tags"].values.tolist()
     all_tags = []
     for x in tags_list.values:
         all_tags += x[0]
 
     result = list(set(all_tags))
-    result.remove("article")
-    result.remove("question")
-    result.remove("caché")
+    result = [x for x in result if x in real_tags]
+
+    #result.remove("article")
+    #result.remove("question")
+    #result.remove("caché")
     with open('all_tags.json', 'w') as outfile:
         json.dump(result, outfile)
     return tuple(set(result))
@@ -97,8 +109,9 @@ mlb = MultiLabelBinarizer(classes=all_tags)
 y_total = mlb.fit_transform(df["tags"])
 
 n = df.shape[0]
-#vec = CountVectorizer(ngram_range=(1,1), tokenizer=tokenize, strip_accents='unicode', use_idf=1,
-#                      smooth_idf=1, sublinear_tf=1 , stop_words=stop_words, vocabulary=vocab)
+#vec = TfidfVectorizer(ngram_range=(1,2), tokenizer=tokenize, strip_accents='unicode', use_idf=1,
+#                      smooth_idf=1, sublinear_tf=1, stop_words=stop_words)
+
 vec = CountVectorizer(ngram_range=(1,1), tokenizer=tokenize, strip_accents='unicode',
                       stop_words=stop_words)
 
@@ -132,24 +145,28 @@ y_test = DataFrame(y_total[line:])
 y_test.columns = mlb.classes_
 y_train.columns = mlb.classes_
 
-
-# Using pipeline for applying logistic regression and one vs rest classifier
-LogReg_pipeline = Pipeline([('clf', OneVsRestClassifier(LogisticRegression(solver='sag', max_iter=800), n_jobs=-1)),])
-
 predictors = {}
-predictors_rf = {}
 for tag in all_tags:
     print('**Processing {} posts...**'.format(tag))
 
-    #randomforest_classifier = RandomForestClassifier(criterion="entropy", random_state=0, n_estimators=200)
-    #randomforest_classifier.fit(train_predictors, train_classes)
-
     # Training logistic regression model on train data
-    LogReg_pipeline.fit(x_train, y_train[tag])
-    predictors[tag] = Pipeline([('clf', OneVsRestClassifier(LogisticRegression(solver='sag', max_iter=800), n_jobs=-1)),])\
-        .fit(x_train, y_train[tag])
+    predictors[tag] = Pipeline([('clf', OneVsRestClassifier(
+        LogisticRegression(solver='sag', max_iter=4000), n_jobs=-1)),]
+                               ).fit(x_train, y_train[tag])
+
+    #predictors[tag] = Pipeline([('clf', OneVsRestClassifier(
+    #    RandomForestClassifier(criterion="entropy", random_state=0, n_estimators=200), n_jobs=-1)),]
+    #                           ).fit(x_train, y_train[tag])
+
+    #predictors[tag] = Pipeline([('clf', OneVsRestClassifier(
+    #    SVC(kernel="rbf", random_state=1, C=5)
+    #    , n_jobs=-1)),]
+    #                          ).fit(x_train, y_train[tag])
+
+
+
     # calculating test accuracy
-    prediction = LogReg_pipeline.predict(x_test)
+    prediction = predictors[tag].predict(x_test)
     print('Test accuracy is {}'.format(accuracy_score(y_test[tag], prediction)))
     print("\n")
 

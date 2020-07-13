@@ -9,6 +9,7 @@ import dash_bootstrap_components as dbc
 import pickle
 import json
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.ensemble import RandomForestClassifier
 import re, string
 import nltk
 from nltk.corpus import stopwords
@@ -111,7 +112,6 @@ def predict_classifier_1(n_clicks, post):
 
 navbar = dbc.NavbarSimple(id="list_menu_content", children=[
     dbc.NavItem(dbc.NavLink("Post Tag Classifier 1", href="/post-tag-classifier-1")),
-    dbc.NavItem(dbc.NavLink("Post Tag Classifier 2", href="/post-tag-classifier-2")),
     dbc.NavItem(dbc.NavLink("Vote in iris-ml-suite!",
                             href="https://openexchange.intersystems.com/contest/current", target="_blank")
                 )])
@@ -132,4 +132,4 @@ if __name__ == '__main__':
     app.layout = html.Div([dcc.Location(id='url', refresh=False),
                         html.Div(navbar),
                         html.Div(id='page-content')])
-    app.run_server(debug=True,host='0.0.0.0')
+    app.run_server(debug=False,host='0.0.0.0')
