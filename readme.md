@@ -11,7 +11,7 @@ I decided to take the the suggestion on this post:
 ```Actually two problems. The tags for the post are selected by the author of the post, and we have the following issues: the author chooses wrong tags for a post, and the post lacks proper tags.``` 
 
 # Predicting Tags from IRIS Developer Community Posts
-![picture](https://raw.githubusercontent.com/renatobanzai/iris-ml-suite/master/img/post_tag_classifier_1.png)
+![picture](https://raw.githubusercontent.com/renatobanzai/iris-ml-suite/master/img/post_tag_classifier.gif)
 
 
 ### Demo
