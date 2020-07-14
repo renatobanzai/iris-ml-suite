@@ -70,10 +70,27 @@ If you think that ML Models never make mistakes you should understand better the
  how the model perform in predictions. Usually accuracy is expressed in percent like numbers. So someone say "I had created
   a model with 70% accuracy". This means that for 70% of predictions, the model will predict correctly. The other 30% will 
   go with the wrong prediction. 
+
+## NLP - Natural Language Processing
+NLP is a field of Machine Learning that works with the ability of a computer to understand and analyse human language.
+And yes our problem can be solved with NLP.
   
 ## Using Machine Learning Algorithms
-Most of Machine Learning Alogorithms has one thing in common: they use as input **NUMBERS**. Yes I know... this was the most
+Most of Machine Learning Algorithms has one thing in common: they use as input **NUMBERS**. Yes I know... this was the most
  difficult to understand how to create Machine Learning models.
+
+## If all the posts and tags are text how does the model could work?
+Good part of the work in a ML Solution is transform the data into something that can be used in a algorithm. This work is 
+called Feature Engineering. In this case is more complicated because the data are unstructured. But a short explantion is*
+I transformed each word of text in a unique id represented by a number. SKLearn and other python libs should help you to do 
+this in a easy way.
+
+## Demonstration
+I have deployed the trained model as a demo here:
+[http://iris-ml-suite.eastus.cloudapp.azure.com/](http://iris-ml-suite.eastus.cloudapp.azure.com/)
+
+## What's next?
+In next post I'll show the code and ways to do all the modeling. Don't miss!
  
 ### If this article help you or you like the content vote:
 This application is at the current contest on open exchange, you can vote in my application **iris-ml-suite** [here](https://openexchange.intersystems.com/contest/current)
