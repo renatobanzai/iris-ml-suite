@@ -15,7 +15,8 @@ import nltk
 from nltk.corpus import stopwords
 nltk.download('stopwords')
 stop_words = set(stopwords.words('english'))
-
+import urllib.request
+from bs4 import BeautifulSoup
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
@@ -56,6 +57,13 @@ def clean_text(text):
     text = text.strip(' ')
     return text
 
+def load_fromurl(pURL):
+    page = urllib.request.urlopen(pURL)
+    soup = BeautifulSoup(page)
+    title = soup.head.title.string
+    text = soup.find_all("div", class_="field-item")[0].get_text()
+    return title + " " + text
+
 
 view_query = []
 for tag in all_tags:
@@ -74,14 +82,18 @@ def get_post_tag_classifier_1():
     return html.Div(children=[
         html.H1(children='Post Tag Classifier Using IRIS + ScikitLearn'),
         html.Div(children=[
-            html.Label('Type your post here to predict tags'),
+            dcc.Input(id="txt_url",style={'width': '60%'}),
+            html.Button('Load Post from URL', id='load-url-button', n_clicks=0),
+            html.Label('Type your post here to predict tags', style={'width': '90%'}),
             dcc.Textarea(id='post-classifier-1',
                          style={'width': '100%', 'height': 200}),
             html.Button('Predict', id='predict-button-classifier-1', n_clicks=0),
+            html.Button('Predict with IntegratedML', id='predict-button-classifier-2', n_clicks=0),
             html.Div(children=[
                 html.Label('Tags'),
                 dcc.Dropdown(id='result-classifier-1',
                              multi=True,
+                             style={'width': '90%'},
                              options=[{"label": opt, "value":opt} for opt in all_tags]
                              )
         ])])
@@ -108,6 +120,22 @@ def predict_classifier_1(n_clicks, post):
                 result.append(tag)
 
     return result
+
+
+@app.callback(
+    Output('post-classifier-1', 'value'),
+    [Input('load-url-button', 'n_clicks')],
+    [State('txt_url', 'value')])
+def load_url_into_text(n_clicks, url):
+    result = ""
+    if n_clicks > 0:
+        page = urllib.request.urlopen(url)
+        soup = BeautifulSoup(page)
+        title = soup.head.title.string
+        text = soup.find_all("div", class_="field-item")[0].get_text()
+        result = title + " " + text
+    return result
+
 
 
 navbar = dbc.NavbarSimple(id="list_menu_content", children=[

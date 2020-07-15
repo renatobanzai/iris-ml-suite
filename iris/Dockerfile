@@ -8,6 +8,7 @@ FROM $IMAGE
 USER root
 
 WORKDIR /opt/irisapp
+RUN chmod 777 /
 RUN chown ${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP} /opt/irisapp
 COPY irissession.sh /
 RUN chmod +x /irissession.sh 
@@ -22,7 +23,8 @@ RUN \
   do $SYSTEM.OBJ.Load("Installer.cls", "ck") \
   set sc = ##class(App.Installer).setup() \
   zn "PYTHON" \
-  zpm "install webterminal"
+  zpm "install webterminal" \
+  zpm "install csvgen"
 
 # bringing the standard shell back
 SHELL ["/bin/bash", "-c"]

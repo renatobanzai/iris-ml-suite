@@ -35,9 +35,9 @@ ClassMethod DefaultNS(pVars, pLogLevel, tInstaller) As %Status
 ClassMethod BuildIndex() As %Status
 {
   Zn "PYTHON"
-  Set tSC = ##class(Community.Post).%BuildIndices()
-  Set tSC = ##class(Community.Tag).%BuildIndices()
-  Set tSC = ##class(Community.Comment).%BuildIndices()
+  Set tSC = ##class(community.post).%BuildIndices()
+  Set tSC = ##class(community.tag).%BuildIndices()
+  Set tSC = ##class(community.comment).%BuildIndices()
   Quit tSC
 }
 

@@ -1,4 +1,4 @@
-Class Community.Post Extends %Persistent 
+Class community.post Extends %Persistent 
 {
 
 Parameter DSTIME = "AUTO";

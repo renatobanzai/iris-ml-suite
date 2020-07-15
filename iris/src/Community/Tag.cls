@@ -1,4 +1,4 @@
-Class Community.Tag Extends %Persistent
+Class community.tag Extends %Persistent
 {
 
 Property Name As %String(MAXLEN = "");
