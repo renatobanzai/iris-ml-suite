@@ -8,13 +8,13 @@ FROM $IMAGE
 USER root
 
 WORKDIR /opt/irisapp
-RUN chmod 777 /
 RUN chown ${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP} /opt/irisapp
 COPY irissession.sh /
 RUN chmod +x /irissession.sh 
 
 USER ${ISC_PACKAGE_MGRUSER}
 
+COPY  *.csv ./
 COPY  Installer.cls .
 COPY  src src
 SHELL ["/irissession.sh"]
@@ -24,7 +24,19 @@ RUN \
   set sc = ##class(App.Installer).setup() \
   zn "PYTHON" \
   zpm "install webterminal" \
-  zpm "install csvgen"
+  zpm "install csvgen" \
+  set fytrain = "ytrain.csv" \
+  set fxtrain = "xtrain.csv" \
+  set fytest = "ytest.csv" \
+  set fxtest = "xtest.csv" \
+  set pclassytrain = "community.ytrain" \
+  set pclassxtrain = "community.xtrain" \
+  set pclassytest = "community.ytest" \
+  set pclassxtest = "community.xtest" \
+  do ##class(community.csvgen).Generate(fytrain,,.pclassytrain) \
+  do ##class(community.csvgen).Generate(fxtrain,,.pclassxtrain) \
+  do ##class(community.csvgen).Generate(fytest,,.pclassytest) \
+  do ##class(community.csvgen).Generate(fxtest,,.pclassxtest)
 
 # bringing the standard shell back
 SHELL ["/bin/bash", "-c"]
