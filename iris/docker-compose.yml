@@ -1,9 +1,7 @@
 version: '3.6'
 services:
   iris-ml:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: renatobanzai/iris-ml:latest
     restart: always
     hostname: iris-ml
     ports:

@@ -17,11 +17,22 @@ nltk.download('stopwords')
 stop_words = set(stopwords.words('english'))
 import urllib.request
 from bs4 import BeautifulSoup
+import jaydebeapi
+import pandas as pd
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import accuracy_score
 from sklearn.multiclass import OneVsRestClassifier
+
+jdbc_server = "jdbc:IRIS://iris-ml:51773/PYTHON"
+jdbc_driver = 'com.intersystems.jdbc.IRISDriver'
+iris_jdbc_jar = "./intersystems-jdbc-3.1.0.jar"
+iris_user = "_SYSTEM"
+iris_password = "SYS"
+
+conn = jaydebeapi.connect(jdbc_driver, jdbc_server, [iris_user, iris_password], iris_jdbc_jar)
+
 
 # load the model from disk
 filename = 'predictors.sav'
@@ -34,11 +45,20 @@ def tokenize(s):
 filename = 'vec.sav'
 vec = pickle.load(open(filename, 'rb'))
 
+filename = 'vec_integratedml.sav'
+vec_integratedml = pickle.load(open(filename, 'rb'))
 
 # load tags
 with open('all_tags.json') as json_file:
     all_tags = set(json.load(json_file))
 
+# load formated
+with open('formated_columns.json') as json_file:
+    formated_columns = set(json.load(json_file))
+
+# load formated
+with open('predict_tags.json') as json_file:
+    predict_tags = set(json.load(json_file))
 
 
 def clean_text(text):
@@ -90,12 +110,18 @@ def get_post_tag_classifier_1():
             html.Button('Predict', id='predict-button-classifier-1', n_clicks=0),
             html.Button('Predict with IntegratedML', id='predict-button-classifier-2', n_clicks=0),
             html.Div(children=[
-                html.Label('Tags'),
+                html.Label('Tags Classifier SkLearn'),
                 dcc.Dropdown(id='result-classifier-1',
                              multi=True,
                              style={'width': '90%'},
                              options=[{"label": opt, "value":opt} for opt in all_tags]
-                             )
+                             ),
+                html.Label('Tags IntegratedML'),
+                dcc.Dropdown(id='result-classifier-2',
+                                 multi=True,
+                                 style={'width': '90%'},
+                                 options=[{"label": opt, "value": opt} for opt in all_tags]
+                                 )
         ])])
         ])
 
@@ -117,6 +143,49 @@ def predict_classifier_1(n_clicks, post):
         post_prepared = vec.transform(df_post["text"])
         for tag in all_tags:
             if predictors[tag].predict(post_prepared)[0] == 1:
+                result.append(tag)
+
+    return result
+
+
+def get_integratedml_prediction(ptag, str_columns, curs):
+    try:
+        model_name = "has_{}_tag".format(ptag)
+        sel = "SELECT PREDICT({} WITH {}) as result".format(model_name, str_columns)
+        curs.execute(sel)
+        iris_tags = curs.fetchall()
+        result = 0
+        if len(iris_tags) > 0:
+            if iris_tags[0][0]==1:
+                result = 1
+
+        return result
+    except:
+        return 0
+
+@app.callback(
+    Output('result-classifier-2', 'value'),
+    [Input('predict-button-classifier-2', 'n_clicks')],
+    [State('post-classifier-1', 'value')])
+def predict_classifier_2(n_clicks, post):
+    #vec = TfidfVectorizer(ngram_range=(1, 2), tokenizer=tokenize,
+    #                      min_df=1, max_df=1, strip_accents='unicode', use_idf=1,
+    #                      smooth_idf=1, sublinear_tf=1)
+    result = []
+    if n_clicks > 0:
+        df_post = DataFrame(columns=["text"])
+        df_post["text"] = [clean_text(post.lower())]
+        post_prepared = vec_integratedml.transform(df_post["text"])
+        sp_matrix_x_train = pd.DataFrame.sparse.from_spmatrix(post_prepared)
+        columns = []
+        vals = list(sp_matrix_x_train.values[0])
+        for x in range(900):
+            columns.append("c"+str(x)+"="+str(vals[x]))
+        str_columns = ", ".join(columns)
+        curs = conn.cursor()
+        for tag in predict_tags:
+            transformed_tag = "tag_" + str(re.subn(r"[\é\s\\\(\)\.\,\$\&\+\/\?\%\|\"\#\-]", "_", tag)[0])
+            if get_integratedml_prediction(transformed_tag, str_columns, curs) == 1:
                 result.append(tag)
 
     return result
@@ -160,4 +229,4 @@ if __name__ == '__main__':
     app.layout = html.Div([dcc.Location(id='url', refresh=False),
                         html.Div(navbar),
                         html.Div(id='page-content')])
-    app.run_server(debug=False,host='0.0.0.0')
+    app.run_server(debug=True,host='0.0.0.0')

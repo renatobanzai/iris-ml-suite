@@ -10,8 +10,6 @@ services:
       - 9091:51773
       - 9092:52773
       - 9093:53773
-    volumes:
-      - ./iris:/irisdev/app
 
   iris-ml-suite:
     build:
@@ -24,7 +22,7 @@ services:
     links:
       - iris-ml
     ports:
-      - 8050:8050
+      - 80:8050
     environment:
       WAIT_HOSTS: iris-ml:51773
     command: predict.py

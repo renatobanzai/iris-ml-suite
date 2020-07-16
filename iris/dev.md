@@ -28,3 +28,5 @@ set filename = "/irisdev/app/csv_y_test.csv"
 set pclass = "community.ytest"
 do ##class(community.csvgen).Generate(filename,,.pclass)
 
+DO $SYSTEM.SQL.Shell()
+

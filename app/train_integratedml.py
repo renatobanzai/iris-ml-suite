@@ -19,7 +19,8 @@ nltk.download('stopwords')
 stop_words = set(stopwords.words('english'))
 import pandas as pd
 
-jdbc_server = "jdbc:IRIS://localhost:51773/PYTHON"
+
+jdbc_server = "jdbc:IRIS://20.185.90.39:51773/PYTHON"
 jdbc_driver = 'com.intersystems.jdbc.IRISDriver'
 iris_jdbc_jar = "./intersystems-jdbc-3.1.0.jar"
 iris_user = "_SYSTEM"
@@ -41,7 +42,8 @@ curs_vocab = conn.cursor()
 curs_vocab.execute("SELECT  ID||' '||Description "
                    "FROM Community.Tag "
                    "where not id is null "
-                   "and not Description is null")
+                   "and not Description is null "
+                   "order by id")
 total_vocab = curs_vocab.fetchall()
 df_vocab = DataFrame(columns=["vocab"], data=total_vocab)
 df_vocab = df_vocab.applymap(lambda s: s.lower() if type(s) == str else s)
@@ -49,7 +51,7 @@ df_vocab = df_vocab.applymap(lambda s: s.lower() if type(s) == str else s)
 curs_tags = conn.cursor()
 curs_tags.execute("SELECT  ID "
                    "FROM Community.Tag "
-                   "where not id is null ")
+                   "where not id is null order by id")
 total_tags = curs_tags.fetchall()
 df_tags = DataFrame(columns=["tags"], data=total_tags)
 df_tags = df_tags.applymap(lambda s: s.lower() if type(s) == str else s)
@@ -140,7 +142,7 @@ sp_matrix_x_test.to_csv("xtest.csv", index=False)
 sp_matrix_x_train.to_csv("xtrain.csv", index=False)
 
 # formating names to be usable in intersystems iris
-formated_columns = [re.subn(r"[\é\s\\\(\)\.\,\$\&\+\/\?\%\|\"\#\-]", "_", x.strip())[0] for x in mlb.classes_]
+formated_columns = ["tag_" + re.subn(r"[\é\s\\\(\)\.\,\$\&\+\/\?\%\|\"\#\-]", "_", x.strip())[0] for x in mlb.classes_]
 
 
 with open('formated_columns.json', 'w') as outfile:
@@ -191,53 +193,20 @@ for i, x in enumerate(formated_columns):
                 "ON " \
                 "ytrain.id = xtrain.id".format(x,x)
 
-    model_text = "CREATE MODEL has_{}_tag PREDICTING ({}) FROM community.view_train_{}".format(x,x, {})
+    model_text = "CREATE MODEL has_{}_tag PREDICTING ({}) FROM community.view_train_{}".format(x,x,x)
 
-    train_text = "TRAIN MODEL has_{}_tag FROM community.view_train".format(x,x)
-
-    curs_loop.execute(view_text)
-
-
-    all_views.append(view_text)
-    all_models.append(model_text)
-    all_trains.append(train_text)
-
-
+    train_text = "TRAIN MODEL has_{}_tag FROM community.view_train_{}".format(x,x,x)
+    print(x)
+    try:
+        curs_loop.execute(view_text)
+        curs_loop.execute(model_text)
+        curs_loop.execute(train_text)
+    except:
+        print(x)
 
 
+    all_views.append("Set tSC = ##class(%SQL.Statement).%ExecDirect(, \"{}\")".format(view_text))
+    all_models.append("Set tSC = ##class(%SQL.Statement).%ExecDirect(, \"{}\")".format(model_text))
+    all_trains.append("Set tSC = ##class(%SQL.Statement).%ExecDirect(, \"{}\")".format(train_text))
 
 predictors = {}
-for tag in all_tags:
-    print('**Processing {} posts...**'.format(tag))
-
-    # Training logistic regression model on train data
-    predictors[tag] = Pipeline([('clf', OneVsRestClassifier(
-        LogisticRegression(solver='sag', max_iter=4000), n_jobs=-1)),]
-                               ).fit(x_train, y_train[tag])
-
-    #predictors[tag] = Pipeline([('clf', OneVsRestClassifier(
-    #    RandomForestClassifier(criterion="entropy", random_state=0, n_estimators=200), n_jobs=-1)),]
-    #                           ).fit(x_train, y_train[tag])
-
-    #predictors[tag] = Pipeline([('clf', OneVsRestClassifier(
-    #    SVC(kernel="rbf", random_state=1, C=5)
-    #    , n_jobs=-1)),]
-    #                          ).fit(x_train, y_train[tag])
-
-
-
-    # calculating test accuracy
-    prediction = predictors[tag].predict(x_test)
-    print('Test accuracy is {}'.format(accuracy_score(y_test[tag], prediction)))
-    print("\n")
-
-filename = 'predictors_integratedml.sav'
-pickle.dump(predictors, open(filename, 'wb'))
-
-# load the model from disk
-# loaded_model = pickle.load(open(filename, 'rb'))
-# result = loaded_model.score(X_test, Y_test)
-
-print("ok")
-
-
