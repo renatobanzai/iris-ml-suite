@@ -1,15 +1,12 @@
 version: '3.6'
 services:
   iris-ml:
-    build:
-      context: ./iris
-      dockerfile: Dockerfile
+    image: renatobanzai/iris-ml:latest
     restart: always
     hostname: iris-ml
     ports:
-      - 9091:51773
-      - 9092:52773
-      - 9093:53773
+      - 51773:51773
+      - 52773:52773
 
   iris-ml-suite:
     build:
