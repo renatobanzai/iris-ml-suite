@@ -25,7 +25,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.metrics import accuracy_score
 from sklearn.multiclass import OneVsRestClassifier
 
-jdbc_server = "jdbc:IRIS://52.142.62.199:9091/PYTHON"
+jdbc_server = "jdbc:IRIS://iris-ml:51773/PYTHON"
 jdbc_driver = 'com.intersystems.jdbc.IRISDriver'
 iris_jdbc_jar = "./intersystems-jdbc-3.1.0.jar"
 iris_user = "_SYSTEM"
