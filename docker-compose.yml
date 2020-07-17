@@ -1,7 +1,7 @@
 version: '3.6'
 services:
   iris-ml:
-    image: renatobanzai/iris-ml:latest
+    image: renatobanzai/iris-ml:bin
     restart: always
     hostname: iris-ml
     ports:

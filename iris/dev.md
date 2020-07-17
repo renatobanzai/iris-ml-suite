@@ -30,3 +30,7 @@ do ##class(community.csvgen).Generate(filename,,.pclass)
 
 DO $SYSTEM.SQL.Shell()
 
+ssh -i /Users/macbook/iris-ml-suite/server/ssh_keys AzureUser@52.142.62.199
+
+
+docker exec -it iris_iris-ml_1 iris session iris

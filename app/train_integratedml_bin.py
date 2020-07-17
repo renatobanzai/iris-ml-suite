@@ -25,6 +25,47 @@ jdbc_driver = 'com.intersystems.jdbc.IRISDriver'
 iris_jdbc_jar = "./intersystems-jdbc-3.1.0.jar"
 iris_user = "_SYSTEM"
 iris_password = "SYS"
+conn = jaydebeapi.connect(jdbc_driver, jdbc_server, [iris_user, iris_password], iris_jdbc_jar)
+
+with open('views.json') as json_file:
+    views = set(json.load(json_file))
+with open('models.json') as json_file:
+    models = set(json.load(json_file))
+with open('trains.json') as json_file:
+    trains = set(json.load(json_file))
+
+curs = conn.cursor()
+err_views = []
+err_models = []
+err_trains = []
+for x in views:
+    try:
+        exec = x.split("\"")[1]
+        curs.execute(exec)
+    except Exception as inst:
+        err_views.append(inst)
+        print("erro em {}".format(exec))
+
+curs = conn.cursor()
+for x in models:
+    try:
+        exec = x.split("\"")[1]
+        curs.execute(exec)
+    except Exception as inst:
+        err_models.append(inst)
+        print("erro em {}".format(exec))
+
+curs = conn.cursor()
+for x in trains:
+    try:
+        exec = x.split("\"")[1]
+        curs.execute(exec)
+    except Exception as inst:
+        err_trains.append(inst)
+        print("erro em {}".format(exec))
+
+
+print("")
 
 conn = jaydebeapi.connect(jdbc_driver, jdbc_server, [iris_user, iris_password], iris_jdbc_jar)
 curs = conn.cursor()

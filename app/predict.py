@@ -25,7 +25,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.metrics import accuracy_score
 from sklearn.multiclass import OneVsRestClassifier
 
-jdbc_server = "jdbc:IRIS://iris-ml:51773/PYTHON"
+jdbc_server = "jdbc:IRIS://52.142.62.199:9091/PYTHON"
 jdbc_driver = 'com.intersystems.jdbc.IRISDriver'
 iris_jdbc_jar = "./intersystems-jdbc-3.1.0.jar"
 iris_user = "_SYSTEM"
@@ -47,6 +47,11 @@ vec = pickle.load(open(filename, 'rb'))
 
 filename = 'vec_integratedml.sav'
 vec_integratedml = pickle.load(open(filename, 'rb'))
+
+filename = 'vec_integratedml_bin.sav'
+vec_integratedml_bin = pickle.load(open(filename, 'rb'))
+
+
 
 # load tags
 with open('all_tags.json') as json_file:
@@ -102,26 +107,35 @@ def get_post_tag_classifier_1():
     return html.Div(children=[
         html.H1(children='Post Tag Classifier Using IRIS + ScikitLearn'),
         html.Div(children=[
-            dcc.Input(id="txt_url",style={'width': '60%'}),
+            dcc.Input(id="txt_url",style={'width': '60%', "margin-right":"20px"},
+                      placeholder="Development Community Post URL"),
             html.Button('Load Post from URL', id='load-url-button', n_clicks=0),
-            html.Label('Type your post here to predict tags', style={'width': '90%'}),
             dcc.Textarea(id='post-classifier-1',
-                         style={'width': '100%', 'height': 200}),
-            html.Button('Predict', id='predict-button-classifier-1', n_clicks=0),
-            html.Button('Predict with IntegratedML', id='predict-button-classifier-2', n_clicks=0),
+                         style={'width': '90%', 'height': 200, "margin-top":"20px"},
+                         placeholder="Text do Predict Tags (you can type or load by URL)"),
+            html.Button('Predict Python SkLearn', id='predict-button-classifier-1',
+                        style={"margin-right":"20px"}, n_clicks=0),
+            html.Button('Predict IRIS IntegratedML', id='predict-button-classifier-2', n_clicks=0),
             html.Div(children=[
-                html.Label('Tags Classifier SkLearn'),
+                html.Label('SkLearn Prediction:'),
                 dcc.Dropdown(id='result-classifier-1',
                              multi=True,
                              style={'width': '90%'},
-                             options=[{"label": opt, "value":opt} for opt in all_tags]
+                             options=[{"label": opt, "value":opt} for opt in all_tags],
+                             disabled=True
                              ),
-                html.Label('Tags IntegratedML'),
-                dcc.Dropdown(id='result-classifier-2',
+                html.Label('IRIS IntegratedML Prediction:'),
+                dcc.Loading(
+                    id="loading-1",
+                    type="default",
+                    children=dcc.Dropdown(id='result-classifier-2',
                                  multi=True,
                                  style={'width': '90%'},
-                                 options=[{"label": opt, "value": opt} for opt in all_tags]
+                                 options=[{"label": opt, "value": opt} for opt in all_tags],
+                                          disabled=True
                                  )
+                )
+
         ])])
         ])
 
@@ -156,12 +170,18 @@ def get_integratedml_prediction(ptag, str_columns, curs):
         iris_tags = curs.fetchall()
         result = 0
         if len(iris_tags) > 0:
-            if iris_tags[0][0]==1:
+            if iris_tags[0][0]=="1":
                 result = 1
 
         return result
     except:
         return 0
+
+@app.callback(Output("loading-output-1", "children"), [Input("input-1", "value")])
+def input_triggers_spinner(value):
+    time.sleep(1)
+    return value
+
 
 @app.callback(
     Output('result-classifier-2', 'value'),
@@ -175,7 +195,7 @@ def predict_classifier_2(n_clicks, post):
     if n_clicks > 0:
         df_post = DataFrame(columns=["text"])
         df_post["text"] = [clean_text(post.lower())]
-        post_prepared = vec_integratedml.transform(df_post["text"])
+        post_prepared = vec_integratedml_bin.transform(df_post["text"])
         sp_matrix_x_train = pd.DataFrame.sparse.from_spmatrix(post_prepared)
         columns = []
         vals = list(sp_matrix_x_train.values[0])
@@ -228,5 +248,6 @@ def display_page(pathname, suppress_callback_exceptions=True):
 if __name__ == '__main__':
     app.layout = html.Div([dcc.Location(id='url', refresh=False),
                         html.Div(navbar),
-                        html.Div(id='page-content')])
+                        html.Div(id='page-content', style={"margin-left":"15px",
+                                                           "margin-right":"15px"})])
     app.run_server(debug=True,host='0.0.0.0')
