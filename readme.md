@@ -73,8 +73,8 @@ After a while you can open your browser and go to the address:
 
 I'm using for now the PYTHON namespace
 
+[http://localhost:9092/csp/sys/UtilHome.csp](http://localhost:9092/csp/sys/UtilHome.csp)
 ```
-http://localhost:9092
 user: _SYSTEM
 pass: SYS
 ```
