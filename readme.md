@@ -8,7 +8,9 @@ IRIS to compose my Machine Learning Environment.
 I decided to take the the suggestion on this post: 
 [https://community.intersystems.com/post/posts-and-tags-problem-intersystems-iris-ai-contest](posts-and-tags-problem-intersystems-iris-ai-contest)
 
-```Actually two problems. The tags for the post are selected by the author of the post, and we have the following issues: the author chooses wrong tags for a post, and the post lacks proper tags.``` 
+Actually two problems. 
+1. The author chooses wrong tags.
+2. The author chooses no tags.
 
 # Predicting Tags from IRIS Developer Community Posts
 ![picture](https://raw.githubusercontent.com/renatobanzai/iris-ml-suite/master/img/post_tag_classifier.gif)
@@ -26,11 +28,6 @@ training set.
 
 Type or paste a community post on the textarea of site and click in Predict. After this, my model will predict which
  tags should fit better for it. 
- 
-# Next Steps
-- Make a task force to create a good training dataset.
-- Use the comments to enforce the model.
-- Use iKnow as vectorizer.
 
 ## Getting started
 
@@ -58,7 +55,7 @@ git clone https://github.com/renatobanzai/iris-ml-suite.git
 ```
 docker-compose build
 
-docker-compose up
+docker-compose up -d
 ```
 
 ### Estimated time to up containers
