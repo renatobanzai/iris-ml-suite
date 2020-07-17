@@ -45,11 +45,11 @@ git clone https://github.com/renatobanzai/iris-ml-suite.git
 
 ### Building and running the docker-compose
 **adjust docker settings to up memory and cpu the AI demands more capacity**
-- 4GB Memory (or more if you can)
+- 6GB Memory (or more if you can)
 - 2CPU (or more if you can)
 
 ### Need to set more memory to docker engine
-![picture](https://raw.githubusercontent.com/renatobanzai/iris-python-covid19/master/img/docker_memory.png)
+![picture](https://raw.githubusercontent.com/renatobanzai/iris-ml-suite/master/img/docker_memory.png)
 
 ### Running in linux and MacOS
 ```
